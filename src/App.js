@@ -1,26 +1,54 @@
-import React, { Component } from 'react'
-import TodoList from './TodoList'
+import React, { useState, useEffect, useReducer } from "react";
+import { Context } from './Context';
+import TodoList from "./TodoList";
+import reducer from "./reducer"
 
-export default class App extends Component {
-  state = {
-    todos: [
-      {id: 1, title: 'First todo', completed: false},
-      {id: 2, title: 'Second todo', completed: true},
-    ]
-  }
+export default function App() {
+  const [state, dispatch] = useReducer(reducer, JSON.parse(localStorage.getItem('todos')))
+  
 
-  render() {
-    return (
-      <div className="container">
-        <h1>Todo app</h1>
+  const [todoTitle, setTodoTitle] = useState("");
 
-          <div className="input-field">
-            <input type="text" />
-            <label>Todo name</label>
-          </div>
+//1.callback 2.list of dependancies
 
-          <TodoList todos={this.state.todos} />
+
+  useEffect( ()=> {
+    localStorage.setItem('todos', JSON.stringify(state))
+  }, 
+  [state] 
+  );
+
+  const addTodo = (event) => {
+    if (event.key === "Enter") {
+      // console.log('adding');
+      dispatch({
+        type: 'add',
+        payload: todoTitle
+      })
+      setTodoTitle('');
+    }
+  
+  };
+
+  return (
+    <Context.Provider value={{
+dispatch
+    }}>
+    <div className="container">
+      <h1>Todo app</h1>
+
+      <div className="input-field">
+        <input
+          type="text"
+          value={todoTitle}
+          onChange={(event) => setTodoTitle(event.target.value)}
+          onKeyPress={addTodo}
+        />
+        <label>Todo name</label>
       </div>
-    );
-  }
+
+      <TodoList todos={state} />
+    </div>
+    </Context.Provider>
+  );
 }
